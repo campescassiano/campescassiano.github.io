@@ -4,6 +4,10 @@ title: About
 permalink: /about/
 ---
 
-I'm Programmer for Python & Django. I've made quite a few web apps, especially on Django. Now, I am doing more on backend.
+- I'm Brazilian, from somewhere in that big country;
 
-email: agus[at]python.web.id
+- Currently I'm a Ph.D. student at Sungkyunkwan University - South Korea;
+
+- Working on File Systems and NAND Flash devices.
+
+**email**: cassianocampes@gmail.com
