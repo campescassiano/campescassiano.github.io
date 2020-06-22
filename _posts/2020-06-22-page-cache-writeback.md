@@ -5,7 +5,7 @@ date:   2020-06-22 11:00:00 +0700
 categories: [linux]
 ---
 
-#Métodos de _Caching_
+# Métodos de _Caching_
 
 O _page cache_ consiste em páginas físicas em RAM, onde seu conteúdo corresponde aos
 blocos físicos do disco. O tamanho do _page cache_ é dinâmico de acordo com a demanda
@@ -128,6 +128,16 @@ _Dirty page writeback_ acontece em três situações:
 - Quando a memória livre cai abaixo de um específico valor;
 - Quando _dirty data_ cresce acima de um tempo específico;
 - Quando um processo de usuário invoca o `fsync()`.
+
+Quando a memória livre cai em um certo limite, o kernel invoca o `wakeup_flusher_threads()`
+para acordar as threads de flush que irão rodar o `bdi_writeback_all()`.
+
+Durante o boot do sistema, um temporizador é inicializado para acordar as threads de flush
+que são rodadas via `wb_writeback()`. Esta função então escreve todos os dados que foram
+modificados mais antigos que `dirty_expire_interval` milisegundos atrás.
+
+O código do _flusher_ reside no `mm/page-writeback.c` e `mm/backing-dev.c` e o mecanismo
+de _writeback_ reside em `fs/fs-writeback.c`.
 
 # Referências
 
