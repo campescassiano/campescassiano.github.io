@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "The Page Cacha and Page Writeback"
+title:  "The Page Cache and Page Writeback"
 date:   2020-06-22 11:00:00 +0700
 categories: [linux]
 ---
@@ -80,6 +80,54 @@ O _address-space_ é associado com algum objeto do kernel. Normalmente isso é u
 Se sim, o campo _host_ aponta para o _inode_ associado. O campo _host_ é _NULL_ se o objeto
 associado não é um inode - por exemplo, se é associado com um _swapper_.
 
+### Operações _address-space_
+
+Pode ser visto em `<linux/fs.h>` o `struct address_space_operations` que define a tabela de
+operações. Estas funções apontam para as funções que implementam os I/O das páginas para
+este objeto em _cache_.
+Cada _backing store_ descreve como ele interage com o _page cache_ via seu próprio
+`address_space_operations`.
+Por exemplo, o ext3 define suas operações em `fs/ext3/inode.c`. Assim, estas são as funções
+que gerenciam o _page cache_, incluindo o mais comum: lendo páginas para dentro do _page cache_
+e atualizando os dados no _page cache_. Assim, os métodos `readpage()` e `writepage()` são
+os mais importantes.
+
+Para os passos de leitura, o kernel primeiro tenta encontrar os dados no _page cache_ chamando
+o `find_get_page(mapping, index)`; onde o _mapping_ é o _address-space_ e o _index_ é o _offset_
+dentro do arquivo, em páginas.
+
+Para operações de escrita, o método é um pouco diferente. Para mapeamento de arquivos, sempre
+que uma página é modificada, o VM simplesmente chama `setPageDirty(page)`.
+
+O kernel posteriormente escreve as páginas via `writepage()`. Operações de escrita em arquivos
+específicos são mais complicados. O caminho generico de escrita em `mm/filemap.c` realiza
+os seguintes passos:
+
+```c
+page = __grab_cache_page(mapping, index, &cached_page, &lru_vec);
+status = a_ops->prepare_write(file, page, offset, offset+bytes);
+page_fault = filemap_copy_from_user(page, offset, buf, bytes);
+status = a_ops->commit_write(file, page, offset, offset+bytes);
+```
+
+Primeiro, o _page cache_ é buscado pela página desejada. Se não está na _cache_, uma entrada
+é alocada e adicionada. Depois, o kernel configura a solicitação de escrita e os dados são
+copiados do _user-space_ para dentro do _buffer_ do kernel. Finalmente, os dados são escritos
+no disco.
+
+## O _Buffer Cache_
+
+Blocos de disco individuais também são amarrados ao _page cache_ por meio dos _block I/O buffers_.
+Lembre-se que um _buffer_ é a representação _in-memory_ de um único bloco físico do disco.
+_Buffers_ agem como descritores que mapeiam páginas em memoria para blocos do disco.
+
+## As _Flusher Threads_
+
+_Dirty page writeback_ acontece em três situações:
+
+- Quando a memória livre cai abaixo de um específico valor;
+- Quando _dirty data_ cresce acima de um tempo específico;
+- Quando um processo de usuário invoca o `fsync()`.
 
 # Referências
 
