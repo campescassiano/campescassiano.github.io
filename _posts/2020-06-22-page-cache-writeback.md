@@ -135,10 +135,12 @@ para acordar as threads de flush que irão rodar o `bdi_writeback_all()`.
 Durante o boot do sistema, um temporizador é inicializado para acordar as threads de flush
 que são rodadas via `wb_writeback()`. Esta função então escreve todos os dados que foram
 modificados mais antigos que `dirty_expire_interval` milisegundos atrás.
-
+s
 O código do _flusher_ reside no `mm/page-writeback.c` e `mm/backing-dev.c` e o mecanismo
 de _writeback_ reside em `fs/fs-writeback.c`.
 
+Antes do kernel 2.6, o trabalho das threads de _flush_ eram feitos por duas outras threads,
+_bdflush_ e _kupdated_.
 # Referências
 
 [1] Linux Kernel Development - a thorough guide to the design and implementation
