@@ -33,3 +33,19 @@ Vemos que o `Stream Directive` está desabilitado, portanto vamos habilitá-lo:
 ```sh
 sudo nvme dir-send /dev/nvme0n1 --dir-type 0 --dir-oper 1 --target-dir 1 --endir 1
 ```
+
+Outro detalhe que eu precisei fazer foi remover os módulos nvme para subir eles com
+os streams habilitados:
+
+```sh
+sudo rmmod nvme && sudo rmmod nvme_core
+```
+
+E então reinstalar os módulos, passando o parâmetro que habilita os streams no driver:
+```sh
+cd linux-x.x.x/drivers/nvme/host
+sudo insmod nvme-core.ko streams=1
+sudo insmod nvme.ko
+```
+
+Agora sim temos o driver carregado com os streams ativado.
