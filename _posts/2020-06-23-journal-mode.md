@@ -19,6 +19,7 @@ porrada de coisas que tu não precisa saber. Eu diria que é bem completo.
 Aqui vai um trechinho do meu `dumpe2fs`:
 
 ```sh
+sudo dumpe2fs -h /dev/nvme0n1
 [...]
 
 Blocks per group:         32768
@@ -44,6 +45,8 @@ o que este artigo diz: **mudar o modo de journal** do _JBD2_.
 Aqui vai um trecho da saída do `tune2fs`:
 
 ```sh
+sudo tune2fs -l /dev/nvme0n1
+
 tune2fs 1.44.1 (24-Mar-2018)
 Filesystem volume name:   <none>
 Last mounted on:          /
@@ -79,3 +82,15 @@ um maior número de escritas no dispositivo.
 Por padrão, um sistema de arquivos `ext4` vai montar o journal no modo
 `journal_data_ordered`, pois é o modo que garante um certo grau de
 tolerância a falhas, sem impactar demais na performance.
+
+Se quiser desativar o journal, então pode-se fazer o seguinte:
+
+```sh
+tune2fs -O ^has_journal /dev/sda1
+```
+
+E por fim, para verificar se tudo deu certinho, execute:
+
+```sh
+sudo e2fsck -f /dev/nvme0n1
+```
